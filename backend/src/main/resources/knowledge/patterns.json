@@ -1,0 +1,662 @@
+{
+  "patterns": [
+    {
+      "id": "hash-complement",
+      "name": "Hash map complement lookup",
+      "topics": ["Array", "Hash Table"],
+      "problemKeywords": ["two sum", "pair", "adds up to", "sums to", "target", "complement", "exactly k", "count pairs"],
+      "codeSignals": ["hashMap"],
+      "bruteForceTime": "O(n^2)",
+      "bruteForceSpace": "O(1)",
+      "optimalTime": "O(n)",
+      "optimalSpace": "O(n)",
+      "keyInsight": "While scanning left to right you already know everything to your left. Instead of searching for the partner, ask whether the partner has already been seen.",
+      "direction": "One pass with a hash map from value (or running state) to index, checking membership before you insert.",
+      "ladder": {
+        "clarify": "Nail down the contract first: are you returning indices or values, is exactly one answer guaranteed, and can the same element be used twice? Those three answers change the code.",
+        "observe": "Look at what the inner loop is actually doing. For each element it re-scans the rest of the array asking one question: 'does target - x exist?' That is a membership question, not a scanning question.",
+        "concept": "Membership questions answered in O(1) are what hash tables are for. If you could ask 'have I seen this value?' instantly, the inner loop disappears entirely.",
+        "direction": "Do a single pass. Before storing the current element, check whether its required partner is already in the map. Order matters — check first, then insert, and the 'same element twice' problem solves itself.",
+        "pseudocode": "seen = empty map (value -> index)\nfor i, x in enumerate(nums):\n    need = target - x\n    if need in seen:\n        return [seen[need], i]\n    seen[x] = i\nreturn []",
+        "solution": "A single pass with a hash map. For each element compute the complement, return immediately if the complement was already recorded, otherwise record the current value. One pass, O(n) time, O(n) space, and the check-before-insert order guarantees you never reuse the same index."
+      },
+      "questions": {
+        "clarify": ["Are duplicates allowed in the input?", "Is a valid answer guaranteed to exist?"],
+        "observe": ["What single question is your inner loop asking, over and over?", "Which part of the array have you already visited when you reach index i?"],
+        "concept": ["Which data structure answers 'is x present?' in constant time?", "What would you have to store to make the partner lookup instant?"],
+        "direction": ["If you check the map before inserting the current value, what problem does that automatically avoid?"]
+      },
+      "alternatives": [
+        {
+          "id": "sort-two-pointer",
+          "name": "Sort then two pointers",
+          "summary": "Sort the values, then close in from both ends comparing the sum against the target.",
+          "time": "O(n log n)",
+          "space": "O(1)",
+          "pros": ["Constant extra space", "Extends naturally to 3-sum and k-sum", "Cache friendly"],
+          "cons": ["Sorting destroys original indices", "Slower than the hash pass", "Needs comparable values"],
+          "whenToPrefer": "When memory is tight, when you must return values rather than indices, or when the array is already sorted.",
+          "keyInsight": "On sorted data the sum moves monotonically as you move either pointer, so one comparison eliminates a whole side."
+        },
+        {
+          "id": "brute-force-pairs",
+          "name": "Nested pair scan",
+          "summary": "Try every pair (i, j) and test the sum.",
+          "time": "O(n^2)",
+          "space": "O(1)",
+          "pros": ["Obviously correct", "No extra memory", "Fine for tiny n"],
+          "cons": ["Quadratic — dies above ~10^4 elements"],
+          "whenToPrefer": "As a correctness oracle when testing a faster version, or when n is guaranteed tiny.",
+          "keyInsight": "Every pair is checked twice; the structure is symmetric and wasteful."
+        }
+      ],
+      "practice": ["Two Sum", "Subarray Sum Equals K", "Contains Duplicate II", "4Sum II", "Longest Consecutive Sequence"]
+    },
+    {
+      "id": "sliding-window",
+      "name": "Sliding window",
+      "topics": ["Array", "String", "Sliding Window", "Two Pointers"],
+      "problemKeywords": ["substring", "subarray", "contiguous", "longest", "shortest", "at most k", "window", "consecutive", "without repeating"],
+      "codeSignals": ["slidingWindow"],
+      "bruteForceTime": "O(n^2)",
+      "bruteForceSpace": "O(n)",
+      "optimalTime": "O(n)",
+      "optimalSpace": "O(k)",
+      "keyInsight": "The answer is a contiguous range, and when a window becomes invalid you never need to shrink it from the right — only from the left. Each endpoint therefore moves forward at most n times.",
+      "direction": "Two indices defining a window, expanding on the right and contracting on the left while a validity condition is broken, tracking the best window seen.",
+      "ladder": {
+        "clarify": "Two things to pin down: must the answer be contiguous, and are you maximising a valid window or minimising one that satisfies a condition? Those two shapes have different shrink rules.",
+        "observe": "When you re-check a candidate starting at i+1, how much of the work you did for i are you throwing away? Almost all of it — even though the two ranges overlap in all but one element.",
+        "concept": "The window's validity is monotone: extending right can only break it, and moving left can only repair it. That monotonicity means you never have to restart, only adjust.",
+        "direction": "Keep a left and a right pointer plus a small amount of window state (a frequency map or a running sum). Advance right one step at a time; while the window is invalid, advance left and undo its contribution. Record the best window after each step.",
+        "pseudocode": "left = 0; best = 0; state = empty\nfor right in range(n):\n    add nums[right] to state\n    while state is invalid:\n        remove nums[left] from state\n        left += 1\n    best = max(best, right - left + 1)\nreturn best",
+        "solution": "Maintain a window [left, right] and incremental state. Expand right every iteration, and shrink from the left only while the invariant is violated. Each index enters and leaves the window at most once, so despite the nested while loop the total work is O(n), with space proportional to the distinct items in the window."
+      },
+      "questions": {
+        "clarify": ["Does the answer have to be contiguous, or can it skip elements?", "Are you looking for the longest valid window or the shortest one that qualifies?"],
+        "observe": ["How much overlap is there between the candidate starting at i and the one starting at i+1?", "When a window becomes invalid, could shrinking from the right ever help?"],
+        "concept": ["What state do you need so that adding or removing one element is O(1)?", "Is the validity of the window monotone as you extend it?"],
+        "direction": ["If both pointers only ever move forward, what is the total number of moves?"]
+      },
+      "alternatives": [
+        {
+          "id": "prefix-with-hashmap",
+          "name": "Prefix sums + hash map",
+          "summary": "Store each prefix value and look up the prefix you would need to have seen.",
+          "time": "O(n)",
+          "space": "O(n)",
+          "pros": ["Works with negative numbers, where windows break", "Handles 'sum equals exactly k' cleanly"],
+          "cons": ["More memory", "Harder to reason about with duplicates"],
+          "whenToPrefer": "When values can be negative, so shrinking the window no longer reliably reduces the sum.",
+          "keyInsight": "A subarray sum is the difference of two prefix sums, which turns a range question into a membership question."
+        },
+        {
+          "id": "brute-force-windows",
+          "name": "Enumerate every window",
+          "summary": "For each start index, extend the end while the condition holds.",
+          "time": "O(n^2)",
+          "space": "O(k)",
+          "pros": ["Easy to get right", "Good reference implementation"],
+          "cons": ["Recomputes overlapping work for every start"],
+          "whenToPrefer": "Only for small inputs or to validate the linear version.",
+          "keyInsight": "Every start index rebuilds state that the previous one already had."
+        }
+      ],
+      "practice": ["Longest Substring Without Repeating Characters", "Minimum Size Subarray Sum", "Permutation in String", "Longest Repeating Character Replacement", "Fruit Into Baskets"]
+    },
+    {
+      "id": "two-pointers",
+      "name": "Two pointers on sorted data",
+      "topics": ["Array", "Two Pointers", "Sorting"],
+      "problemKeywords": ["sorted array", "palindrome", "reverse", "container", "trapping", "remove duplicates", "merge two", "squares of"],
+      "codeSignals": ["twoPointers"],
+      "bruteForceTime": "O(n^2)",
+      "bruteForceSpace": "O(n)",
+      "optimalTime": "O(n)",
+      "optimalSpace": "O(1)",
+      "keyInsight": "Order is information. On sorted (or symmetric) data, comparing the two ends tells you which end can never be part of a better answer, so one comparison discards a whole family of candidates.",
+      "direction": "Start a pointer at each end and move the one that cannot improve the answer, until they meet.",
+      "ladder": {
+        "clarify": "Is the input sorted, or can you afford to sort it? And is the answer built from a pair of positions, or from a single scan with a write pointer?",
+        "observe": "Take the outermost pair. Whatever you learn from comparing them rules something out permanently — think about which side can safely be abandoned and why.",
+        "concept": "This is elimination, not search. Each comparison removes one candidate from further consideration, so n comparisons are enough to consider all of them.",
+        "direction": "Place left at 0 and right at n-1. At each step compare, record the candidate answer, then move exactly one pointer inward based on which side is limiting.",
+        "pseudocode": "left, right = 0, n - 1\nbest = 0\nwhile left < right:\n    best = max(best, value(left, right))\n    if limit(left) < limit(right):\n        left += 1\n    else:\n        right -= 1\nreturn best",
+        "solution": "Converge two pointers from the ends. At each step evaluate the current pair, then move the pointer on the limiting side inward — moving the other side can never improve the result. The pointers together travel n steps, giving O(n) time and O(1) space."
+      },
+      "questions": {
+        "clarify": ["Is the input sorted? If not, is sorting allowed?", "Do you need the indices or just the values?"],
+        "observe": ["Comparing the two ends: which end can you prove is useless from here on?", "What changes if you move the larger side inward instead?"],
+        "concept": ["How many candidates does a single comparison eliminate?"],
+        "direction": ["What is the loop invariant that guarantees you never skip the answer?"]
+      },
+      "alternatives": [
+        {
+          "id": "hash-based",
+          "name": "Hash-based single pass",
+          "summary": "Trade memory for order: record what you have seen instead of relying on sortedness.",
+          "time": "O(n)",
+          "space": "O(n)",
+          "pros": ["Works on unsorted input", "Preserves original indices"],
+          "cons": ["O(n) extra memory", "Loses the ordering that makes range answers easy"],
+          "whenToPrefer": "When you cannot sort because indices matter, or the data arrives unsorted and sorting would dominate the cost.",
+          "keyInsight": "Hashing replaces order with memory."
+        }
+      ],
+      "practice": ["Valid Palindrome", "Container With Most Water", "3Sum", "Trapping Rain Water", "Sort Colors"]
+    },
+    {
+      "id": "binary-search",
+      "name": "Binary search / search on the answer",
+      "topics": ["Binary Search", "Array"],
+      "problemKeywords": ["sorted", "find the minimum", "smallest such that", "rotated", "kth smallest", "capacity", "minimum days", "peak"],
+      "codeSignals": ["binarySearch"],
+      "bruteForceTime": "O(n)",
+      "bruteForceSpace": "O(1)",
+      "optimalTime": "O(log n)",
+      "optimalSpace": "O(1)",
+      "keyInsight": "You do not need the data to be sorted — you need a predicate that is false, false, false, then true, true, true. Once you can phrase the question that way, you can binary search the answer space itself.",
+      "direction": "Define a monotone predicate over the candidate range, then halve the range on each test.",
+      "ladder": {
+        "clarify": "What exactly is the search space — array indices, or the range of possible answers? And are you looking for the first index that satisfies a condition, or an exact match?",
+        "observe": "Test a candidate in the middle. Does the outcome tell you anything about every candidate to its left or right? If it does, half your work just vanished.",
+        "concept": "Binary search needs monotonicity, not sortedness. 'Is a ship of capacity C enough?' is false below the answer and true above it — that is the same staircase a sorted array gives you.",
+        "direction": "Set lo and hi to the bounds of the answer space. While lo < hi, test mid; if the predicate holds, keep mid as a candidate and search left, otherwise search right. Be deliberate about which half keeps mid so the loop terminates.",
+        "pseudocode": "lo, hi = min_answer, max_answer\nwhile lo < hi:\n    mid = lo + (hi - lo) // 2\n    if feasible(mid):\n        hi = mid\n    else:\n        lo = mid + 1\nreturn lo",
+        "solution": "Binary search over the answer space with a feasibility predicate. Use lo + (hi - lo) / 2 to avoid overflow in fixed-width languages, and keep the invariant that the answer always lies in [lo, hi]. Each iteration halves the range, so the cost is O(log range) predicate evaluations."
+      },
+      "questions": {
+        "clarify": ["What is the smallest and largest the answer could possibly be?", "Do you need the first qualifying value or any qualifying value?"],
+        "observe": ["If a candidate works, does every larger candidate also work?"],
+        "concept": ["Can you write a boolean function feasible(x) that is monotone in x?"],
+        "direction": ["Which half keeps mid, and why does that choice guarantee termination?"]
+      },
+      "alternatives": [
+        {
+          "id": "linear-scan",
+          "name": "Linear scan",
+          "summary": "Walk the candidates in order until one qualifies.",
+          "time": "O(n)",
+          "space": "O(1)",
+          "pros": ["Trivially correct", "No monotonicity requirement"],
+          "cons": ["Too slow when the answer space is large"],
+          "whenToPrefer": "When the range is tiny or the predicate is not monotone.",
+          "keyInsight": "Without monotonicity you have no way to discard a half."
+        }
+      ],
+      "practice": ["Binary Search", "Search in Rotated Sorted Array", "Koko Eating Bananas", "Find Minimum in Rotated Sorted Array", "Split Array Largest Sum"]
+    },
+    {
+      "id": "prefix-sum",
+      "name": "Prefix sums / running aggregate",
+      "topics": ["Array", "Prefix Sum", "Hash Table"],
+      "problemKeywords": ["range sum", "subarray sum", "equals k", "between indices", "cumulative", "query", "average of subarray"],
+      "codeSignals": ["prefixSum"],
+      "bruteForceTime": "O(n^2)",
+      "bruteForceSpace": "O(1)",
+      "optimalTime": "O(n)",
+      "optimalSpace": "O(n)",
+      "keyInsight": "Any range aggregate is the difference of two prefix aggregates. That converts 'sum over a range' from an O(n) computation into an O(1) subtraction.",
+      "direction": "Precompute a running total, then answer each range with a single subtraction — and pair it with a hash map when the range is unknown.",
+      "ladder": {
+        "clarify": "Are the queries known in advance, and can the values be negative? Negative values rule out sliding windows and push you toward prefix sums.",
+        "observe": "Write out sum(i..j) and sum(0..j) side by side. The first is the second minus something you have already computed.",
+        "concept": "Store cumulative state as you scan. Then a range question becomes a difference, and 'does a range with sum k exist?' becomes 'have I seen prefix - k before?'",
+        "direction": "Build prefix[i] = sum of the first i elements. For counting problems, keep a hash map of prefix value to how often it has occurred and query it as you go.",
+        "pseudocode": "count = 0\nrunning = 0\nseen = {0: 1}\nfor x in nums:\n    running += x\n    count += seen.get(running - k, 0)\n    seen[running] = seen.get(running, 0) + 1\nreturn count",
+        "solution": "Keep a running prefix total and a map from prefix value to occurrence count, seeded with {0: 1} so that ranges starting at index 0 are counted. At each element add the number of earlier prefixes equal to running - k. One pass, O(n) time and space."
+      },
+      "questions": {
+        "clarify": ["Can the array contain negative numbers?", "Are there many range queries or just one?"],
+        "observe": ["How does sum(i..j) relate to sum(0..j) and sum(0..i-1)?"],
+        "concept": ["Why does the map have to be seeded with prefix 0?"],
+        "direction": ["Should you record the current prefix before or after querying the map?"]
+      },
+      "alternatives": [
+        {
+          "id": "sliding-window-alt",
+          "name": "Sliding window",
+          "summary": "Grow and shrink a contiguous window instead of storing all prefixes.",
+          "time": "O(n)",
+          "space": "O(1)",
+          "pros": ["Constant space", "Very cache friendly"],
+          "cons": ["Only valid when all values are non-negative"],
+          "whenToPrefer": "Non-negative values with a monotone window condition.",
+          "keyInsight": "Shrinking only reduces the sum when every value is non-negative."
+        }
+      ],
+      "practice": ["Subarray Sum Equals K", "Range Sum Query - Immutable", "Continuous Subarray Sum", "Product of Array Except Self", "Find Pivot Index"]
+    },
+    {
+      "id": "dynamic-programming",
+      "name": "Dynamic programming",
+      "topics": ["Dynamic Programming", "Recursion", "Memoization"],
+      "problemKeywords": ["number of ways", "minimum cost", "maximum profit", "longest increasing", "can you reach", "edit distance", "coin change", "knapsack", "count distinct"],
+      "codeSignals": ["dp"],
+      "bruteForceTime": "O(2^n)",
+      "bruteForceSpace": "O(n)",
+      "optimalTime": "O(n * k)",
+      "optimalSpace": "O(n)",
+      "keyInsight": "The recursion revisits the same states over and over. Give a state a name, and the exponential tree collapses into a table with one entry per distinct state.",
+      "direction": "Define the state, the transition and the base case; then either memoise the recursion or fill a table bottom-up.",
+      "ladder": {
+        "clarify": "Are you counting possibilities, optimising a value, or answering yes/no? And are choices made once per element, or can elements repeat?",
+        "observe": "Trace your recursion two levels deep and write down the arguments. How many times does the same argument pair show up? That repetition is the entire cost.",
+        "concept": "A subproblem is identified by its state. If two calls have the same state they have the same answer, so the second one is free — if you remembered the first.",
+        "direction": "Write the state as a tuple of exactly the variables that affect the answer, write the transition as a formula over smaller states, and pin the base case. Then memoise; convert to a bottom-up table if you want to drop the recursion.",
+        "pseudocode": "dp = array of size n+1 filled with the identity value\ndp[base] = known answer\nfor state in increasing order:\n    for choice in choices(state):\n        dp[state] = combine(dp[state], dp[state - choice] + cost(choice))\nreturn dp[target]",
+        "solution": "Identify the minimal state, memoise the recursion (or fill the table bottom-up in dependency order), and read the answer off the target state. Cost is the number of states times the work per transition; the space is often reducible to a rolling row when a state only depends on the previous one."
+      },
+      "questions": {
+        "clarify": ["Are you counting, optimising, or deciding feasibility?", "Can each item be used more than once?"],
+        "observe": ["Which arguments repeat in your recursion tree?", "What is the smallest set of variables that fully determines the answer from here?"],
+        "concept": ["If two calls share a state, what does that let you skip?"],
+        "direction": ["In what order must the table be filled so every dependency is already computed?"]
+      },
+      "alternatives": [
+        {
+          "id": "plain-recursion",
+          "name": "Plain recursion",
+          "summary": "Explore every choice without remembering anything.",
+          "time": "O(2^n)",
+          "space": "O(n)",
+          "pros": ["Direct translation of the problem statement", "Easiest to verify"],
+          "cons": ["Recomputes identical subproblems exponentially often"],
+          "whenToPrefer": "As the first draft you then memoise, or when n is below ~20.",
+          "keyInsight": "Correct but forgetful."
+        },
+        {
+          "id": "bottom-up-rolling",
+          "name": "Bottom-up with rolling array",
+          "summary": "Iterative table filling that keeps only the rows still needed.",
+          "time": "O(n * k)",
+          "space": "O(k)",
+          "pros": ["No recursion depth limit", "Much smaller memory footprint", "Usually the fastest constant factor"],
+          "cons": ["Fill order must be derived by hand", "Reconstructing the actual choice sequence takes extra work"],
+          "whenToPrefer": "Large n, tight memory, or when recursion would blow the stack.",
+          "keyInsight": "If dp[i] only reads dp[i-1], you never needed the whole table."
+        }
+      ],
+      "practice": ["Climbing Stairs", "Coin Change", "House Robber", "Longest Increasing Subsequence", "Edit Distance", "Unique Paths"]
+    },
+    {
+      "id": "graph-traversal",
+      "name": "Graph traversal (BFS / DFS)",
+      "topics": ["Graph", "BFS", "DFS", "Matrix"],
+      "problemKeywords": ["islands", "connected", "shortest path", "grid", "neighbors", "flood fill", "course schedule", "clone graph", "rotting", "maze"],
+      "codeSignals": ["graph"],
+      "bruteForceTime": "O(n^2)",
+      "bruteForceSpace": "O(n)",
+      "optimalTime": "O(V + E)",
+      "optimalSpace": "O(V)",
+      "keyInsight": "Model the thing as a graph and the question usually becomes a standard traversal. On an unweighted graph, BFS visits vertices in order of distance — that is what makes it a shortest-path algorithm for free.",
+      "direction": "Identify vertices and edges, pick BFS for shortest hops or DFS for reachability and structure, and mark visited at push time.",
+      "ladder": {
+        "clarify": "What is a vertex and what is an edge here? For a grid, are diagonals neighbours? And are you asked for reachability, count of components, or a shortest distance?",
+        "observe": "Notice which cells you can move to from a given cell. That adjacency relation is a graph, even if nobody handed you one.",
+        "concept": "Reachability and connectivity are traversal questions. BFS explores by layers so the first time it reaches a node it has done so in the fewest steps; DFS goes deep and is better for structural questions like cycles or components.",
+        "direction": "Use a queue for BFS or recursion/an explicit stack for DFS. Mark a node visited when you enqueue it, not when you dequeue it, or you will process nodes twice.",
+        "pseudocode": "queue = [start]; visited = {start}; steps = 0\nwhile queue:\n    for _ in range(len(queue)):\n        node = queue.popleft()\n        if node is goal: return steps\n        for nb in neighbours(node):\n            if nb not in visited:\n                visited.add(nb)\n                queue.append(nb)\n    steps += 1\nreturn -1",
+        "solution": "Build the adjacency relation, then run BFS level by level from the source, marking nodes visited as they are enqueued. Each vertex and edge is handled once, giving O(V + E) time and O(V) space for the queue and visited set."
+      },
+      "questions": {
+        "clarify": ["What counts as a neighbour — 4-directional or 8?", "Is the graph directed? Can it contain cycles?"],
+        "observe": ["Can you describe the moves as edges between states?"],
+        "concept": ["Why does BFS give shortest paths on unweighted graphs but DFS does not?"],
+        "direction": ["Why does marking visited on dequeue instead of enqueue cause duplicates?"]
+      },
+      "alternatives": [
+        {
+          "id": "union-find-alt",
+          "name": "Union-Find (disjoint set union)",
+          "summary": "Merge connected elements and query the component representative.",
+          "time": "O(n α(n))",
+          "space": "O(n)",
+          "pros": ["Ideal for incremental connectivity", "No recursion depth issues", "Very small constants"],
+          "cons": ["Cannot recover paths", "Does not give distances"],
+          "whenToPrefer": "Edges arrive over time, or you only need 'are these two connected?'",
+          "keyInsight": "Connectivity is an equivalence relation, and DSU maintains equivalence classes almost for free."
+        },
+        {
+          "id": "dijkstra",
+          "name": "Dijkstra with a priority queue",
+          "summary": "BFS generalised to weighted edges by always expanding the cheapest frontier node.",
+          "time": "O((V + E) log V)",
+          "space": "O(V)",
+          "pros": ["Handles non-negative weights", "Still a single pass over each edge"],
+          "cons": ["Heap overhead", "Breaks with negative weights"],
+          "whenToPrefer": "Edges have differing non-negative costs.",
+          "keyInsight": "BFS is Dijkstra where every edge costs 1."
+        }
+      ],
+      "practice": ["Number of Islands", "Rotting Oranges", "Course Schedule", "Word Ladder", "Clone Graph", "Pacific Atlantic Water Flow"]
+    },
+    {
+      "id": "heap-top-k",
+      "name": "Heap for top-k / streaming order",
+      "topics": ["Heap", "Sorting", "Priority Queue"],
+      "problemKeywords": ["kth largest", "kth smallest", "top k", "k closest", "merge k", "median", "most frequent"],
+      "codeSignals": ["heap"],
+      "bruteForceTime": "O(n log n)",
+      "bruteForceSpace": "O(n)",
+      "optimalTime": "O(n log k)",
+      "optimalSpace": "O(k)",
+      "keyInsight": "You were asked for k items, not for a sorted array. Keeping a bounded heap of size k means you never pay to order the n - k elements you will throw away.",
+      "direction": "Maintain a size-k heap with the wrong end on top, so the weakest survivor is always the one you evict.",
+      "ladder": {
+        "clarify": "Is k fixed and much smaller than n? Do you need the k items in order, or just the k-th one?",
+        "observe": "If you sort everything, count how many of those comparisons touch elements that never make the top k. That is the waste.",
+        "concept": "A heap gives you the extreme element in O(1) and maintains that property in O(log size). Bound the size at k and each element costs at most one log k insertion.",
+        "direction": "For the k largest, use a min-heap of size k: push each element, and pop as soon as the heap exceeds k. The root ends up being the k-th largest.",
+        "pseudocode": "heap = empty min-heap\nfor x in nums:\n    push(heap, x)\n    if size(heap) > k:\n        pop(heap)\nreturn top(heap)",
+        "solution": "Stream the input through a min-heap capped at k elements. Each push/pop pair is O(log k) and there are n of them, giving O(n log k) time with O(k) space — and the same code works on data too large to hold in memory."
+      },
+      "questions": {
+        "clarify": ["How large is k relative to n?", "Do you need the k values ordered?"],
+        "observe": ["How many of the comparisons in a full sort involve elements outside the top k?"],
+        "concept": ["Why a min-heap when you want the largest values?"],
+        "direction": ["What is on the heap root when the heap holds exactly k elements?"]
+      },
+      "alternatives": [
+        {
+          "id": "quickselect",
+          "name": "Quickselect",
+          "summary": "Partition around a pivot and recurse only into the side containing the k-th position.",
+          "time": "O(n) average",
+          "space": "O(1)",
+          "pros": ["Linear on average", "In-place"],
+          "cons": ["O(n^2) worst case without randomisation", "Reorders the input", "Not usable on a stream"],
+          "whenToPrefer": "Single offline query over an array you are allowed to mutate.",
+          "keyInsight": "You do not have to sort a side you will never look at."
+        },
+        {
+          "id": "full-sort",
+          "name": "Sort and index",
+          "summary": "Sort the array and read position k.",
+          "time": "O(n log n)",
+          "space": "O(n)",
+          "pros": ["Two lines of code", "Uses a heavily optimised library sort"],
+          "cons": ["Orders far more than you needed"],
+          "whenToPrefer": "Small inputs, or when you need many different k values.",
+          "keyInsight": "Simplicity is worth something when n is small."
+        }
+      ],
+      "practice": ["Kth Largest Element in an Array", "Top K Frequent Elements", "K Closest Points to Origin", "Merge k Sorted Lists", "Find Median from Data Stream"]
+    },
+    {
+      "id": "monotonic-stack",
+      "name": "Monotonic stack",
+      "topics": ["Stack", "Array", "Monotonic Stack"],
+      "problemKeywords": ["next greater", "previous smaller", "daily temperatures", "histogram", "largest rectangle", "span", "remove k digits"],
+      "codeSignals": ["stack"],
+      "bruteForceTime": "O(n^2)",
+      "bruteForceSpace": "O(1)",
+      "optimalTime": "O(n)",
+      "optimalSpace": "O(n)",
+      "keyInsight": "When a new element arrives, every pending element it dominates can be resolved and discarded forever. Keeping the pending ones in sorted order on a stack makes 'who does this resolve?' a prefix of that stack.",
+      "direction": "Scan once, keeping a stack that stays monotone, popping while the incoming element breaks the order.",
+      "ladder": {
+        "clarify": "For each position, are you looking rightwards or leftwards, and do you want the next strictly greater element or the next greater-or-equal one?",
+        "observe": "When you find the answer for some element, notice that the elements still waiting behind it are always in increasing (or decreasing) order. That is not a coincidence — it is an invariant you can maintain.",
+        "concept": "Maintain a stack of indices whose answers are still unknown, kept monotone. A new element resolves exactly the elements it dominates, and those are always on top.",
+        "direction": "For each index, pop while the stack top is dominated by the current value, recording the answer for each popped index, then push the current index.",
+        "pseudocode": "stack = []\nresult = [0] * n\nfor i, x in enumerate(nums):\n    while stack and nums[stack[-1]] < x:\n        j = stack.pop()\n        result[j] = i - j\n    stack.append(i)\nreturn result",
+        "solution": "One pass with a stack of unresolved indices kept in decreasing value order. Each index is pushed once and popped at most once, so the nested while loop still totals O(n) work, with O(n) worst-case stack space."
+      },
+      "questions": {
+        "clarify": ["Strictly greater, or greater-or-equal?", "Are you scanning left to right or right to left?"],
+        "observe": ["What order are the still-unanswered elements in?"],
+        "concept": ["How many times can a single index be pushed and popped?"],
+        "direction": ["Should the stack hold values or indices? What do you lose by holding values?"]
+      },
+      "alternatives": [
+        {
+          "id": "brute-force-scan",
+          "name": "Scan forward from each index",
+          "summary": "For every element, walk right until you find a bigger one.",
+          "time": "O(n^2)",
+          "space": "O(1)",
+          "pros": ["Immediately obvious", "No extra memory"],
+          "cons": ["Rescans the same suffix repeatedly"],
+          "whenToPrefer": "Tiny inputs or as a test oracle.",
+          "keyInsight": "Each scan rediscovers what the previous scan already knew."
+        }
+      ],
+      "practice": ["Daily Temperatures", "Next Greater Element I", "Largest Rectangle in Histogram", "Trapping Rain Water", "Remove K Digits"]
+    },
+    {
+      "id": "backtracking",
+      "name": "Backtracking",
+      "topics": ["Backtracking", "Recursion"],
+      "problemKeywords": ["all permutations", "all combinations", "subsets", "n-queens", "sudoku", "generate all", "word search", "partition"],
+      "codeSignals": ["backtracking"],
+      "bruteForceTime": "O(n!)",
+      "bruteForceSpace": "O(n)",
+      "optimalTime": "O(n * 2^n)",
+      "optimalSpace": "O(n)",
+      "keyInsight": "You are enumerating a tree of choices. The savings come from pruning branches that cannot possibly lead to a valid answer — not from making the enumeration itself faster.",
+      "direction": "Recursive choose / explore / un-choose, with a feasibility check before descending.",
+      "ladder": {
+        "clarify": "Do you need every solution or just one? Does order within a result matter (permutations) or not (combinations)? Can values repeat?",
+        "observe": "Draw the decision tree two levels deep. Notice how many branches are already invalid before you reach a leaf — those subtrees cost nothing to skip.",
+        "concept": "Backtracking is DFS over partial states. The state must be restored exactly when you return, or sibling branches inherit corruption from their neighbours.",
+        "direction": "Write a recursive function that takes the current partial solution and the remaining choices. Push a choice, recurse, then pop it. Prune before recursing whenever the partial state already violates a constraint.",
+        "pseudocode": "def backtrack(path, choices):\n    if is_complete(path):\n        results.append(path.copy())\n        return\n    for i, choice in enumerate(choices):\n        if not feasible(path, choice):\n            continue\n        path.append(choice)\n        backtrack(path, choices without i)\n        path.pop()",
+        "solution": "Depth-first enumeration with explicit undo. Append a choice, recurse, then remove it so the parent frame sees the state it had. Copy the path when recording a result, since the working list keeps mutating. The output itself is exponential, so pruning — not asymptotics — is where the wins are."
+      },
+      "questions": {
+        "clarify": ["All solutions, or just one?", "Does the order of elements inside a result matter?"],
+        "observe": ["How early can you tell a branch is doomed?"],
+        "concept": ["What happens to sibling branches if you forget to undo a choice?"],
+        "direction": ["Why must you copy the path when recording a result?"]
+      },
+      "alternatives": [
+        {
+          "id": "bitmask-enumeration",
+          "name": "Bitmask enumeration",
+          "summary": "Iterate 0..2^n - 1 and read each integer's bits as an inclusion mask.",
+          "time": "O(n * 2^n)",
+          "space": "O(1) beyond output",
+          "pros": ["No recursion", "Very fast constants", "Trivial to parallelise"],
+          "cons": ["Only works up to about n = 20", "No pruning at all"],
+          "whenToPrefer": "Small n where you genuinely want every subset.",
+          "keyInsight": "A subset of n items is exactly an n-bit integer."
+        }
+      ],
+      "practice": ["Subsets", "Permutations", "Combination Sum", "Word Search", "N-Queens", "Palindrome Partitioning"]
+    },
+    {
+      "id": "string-frequency",
+      "name": "Character / element frequency counting",
+      "topics": ["String", "Hash Table", "Counting"],
+      "problemKeywords": ["anagram", "frequency", "occurrences", "character count", "isomorphic", "majority element", "group by"],
+      "codeSignals": ["hashMap"],
+      "bruteForceTime": "O(n log n)",
+      "bruteForceSpace": "O(n)",
+      "optimalTime": "O(n)",
+      "optimalSpace": "O(1)",
+      "keyInsight": "When the alphabet is bounded, a counting array of fixed size is both faster and smaller than sorting or hashing — and turns comparison into a single fixed-length equality check.",
+      "direction": "Tally counts in a fixed-size array or map in one pass, then compare or query the tallies.",
+      "ladder": {
+        "clarify": "What is the alphabet — lowercase ASCII, full Unicode? Is the comparison case sensitive? A bounded alphabet unlocks the constant-space version.",
+        "observe": "Sorting both strings works, but it establishes far more than you need: you only care about how many of each character there are, not their order.",
+        "concept": "Multiset equality is what this asks for. A tally is the canonical representation of a multiset.",
+        "direction": "Increment counts for the first string, decrement for the second, then check that everything is zero. One pass each, one fixed-size array.",
+        "pseudocode": "if len(a) != len(b): return False\ncounts = [0] * 26\nfor ch in a: counts[ord(ch) - ord('a')] += 1\nfor ch in b: counts[ord(ch) - ord('a')] -= 1\nreturn all(c == 0 for c in counts)",
+        "solution": "Tally the first string and untally the second in a fixed 26-slot array, then assert every slot is zero. O(n) time, and the space is O(1) because the alphabet size is a constant, not a function of n."
+      },
+      "questions": {
+        "clarify": ["What is the alphabet size?", "Is the comparison case sensitive?"],
+        "observe": ["What does sorting give you that you do not actually need?"],
+        "concept": ["Why is a 26-slot array O(1) space and not O(n)?"],
+        "direction": ["What is the very first check that lets you exit early?"]
+      },
+      "alternatives": [
+        {
+          "id": "sort-compare",
+          "name": "Sort both and compare",
+          "summary": "Sort each string and test equality.",
+          "time": "O(n log n)",
+          "space": "O(n)",
+          "pros": ["Two lines", "Works for any alphabet including Unicode"],
+          "cons": ["Slower than counting", "Allocates sorted copies"],
+          "whenToPrefer": "Unbounded alphabets, or when clarity beats speed.",
+          "keyInsight": "Sorting is a general-purpose hammer that over-solves this."
+        }
+      ],
+      "practice": ["Valid Anagram", "Group Anagrams", "Ransom Note", "Find All Anagrams in a String", "Majority Element"]
+    },
+    {
+      "id": "linked-list-pointers",
+      "name": "Fast / slow pointers on linked structures",
+      "topics": ["Linked List", "Two Pointers"],
+      "problemKeywords": ["linked list", "cycle", "middle of", "nth from end", "reverse the list", "intersection", "reorder"],
+      "codeSignals": ["twoPointers"],
+      "bruteForceTime": "O(n)",
+      "bruteForceSpace": "O(n)",
+      "optimalTime": "O(n)",
+      "optimalSpace": "O(1)",
+      "keyInsight": "You cannot index into a linked list, but you can run two cursors at different speeds. The gap between them encodes exactly the positional information an index would have given you.",
+      "direction": "Two cursors, one moving faster or starting ahead, plus careful pointer rewiring with a dummy head.",
+      "ladder": {
+        "clarify": "Can the list be empty or a single node? Are you allowed to mutate the nodes, or must the original list survive?",
+        "observe": "The obvious fix is to copy the list into an array so you can index it. What does that cost, and is the positional information really unavailable without it?",
+        "concept": "Relative speed encodes position. If one pointer moves twice as fast, it is at 2i when the other is at i — which is exactly what 'the middle' means.",
+        "direction": "Advance slow by one and fast by two per step. Use a dummy node in front of the head so deleting the first element needs no special case.",
+        "pseudocode": "dummy = Node(next=head)\nslow = fast = dummy\nwhile fast and fast.next:\n    slow = slow.next\n    fast = fast.next.next\n# slow is now at the middle / the cycle meeting point\nreturn slow",
+        "solution": "Two cursors from a dummy head moving at different speeds. Always guard both fast and fast.next before dereferencing, and use the dummy so head deletion is not a special case. One pass, O(1) extra space."
+      },
+      "questions": {
+        "clarify": ["Can the list be empty or have one node?", "May you modify the nodes in place?"],
+        "observe": ["What does copying to an array cost you, and what does it buy?"],
+        "concept": ["When fast has moved 2i steps, where is slow?"],
+        "direction": ["Why does a dummy head remove the head-deletion special case?"]
+      },
+      "alternatives": [
+        {
+          "id": "hash-visited",
+          "name": "Hash set of visited nodes",
+          "summary": "Walk the list and record every node you have seen.",
+          "time": "O(n)",
+          "space": "O(n)",
+          "pros": ["Very easy to reason about", "Reports the exact repeat node immediately"],
+          "cons": ["O(n) memory for something achievable in O(1)"],
+          "whenToPrefer": "When clarity matters more than memory, or nodes lack a usable identity for pointer tricks.",
+          "keyInsight": "Memory can always substitute for cleverness — at a price."
+        }
+      ],
+      "practice": ["Linked List Cycle", "Middle of the Linked List", "Remove Nth Node From End of List", "Reverse Linked List", "Reorder List"]
+    },
+    {
+      "id": "greedy",
+      "name": "Greedy with an exchange argument",
+      "topics": ["Greedy", "Sorting", "Array"],
+      "problemKeywords": ["minimum number of", "maximum profit", "intervals", "meeting rooms", "jump", "gas station", "schedule", "non-overlapping"],
+      "codeSignals": ["sorting"],
+      "bruteForceTime": "O(2^n)",
+      "bruteForceSpace": "O(n)",
+      "optimalTime": "O(n log n)",
+      "optimalSpace": "O(1)",
+      "keyInsight": "If you can argue that taking the locally best option never rules out an optimal solution — you can always swap it in without making things worse — then one ordered pass is enough and the search collapses.",
+      "direction": "Find the right sort order, then make one irrevocable pass taking the locally best option.",
+      "ladder": {
+        "clarify": "What exactly is being optimised, and are ties meaningful? For intervals, do endpoints that touch count as overlapping?",
+        "observe": "Try a couple of small cases by hand and notice which item you always end up picking first. That choice is usually the greedy rule.",
+        "concept": "A greedy choice is safe when an exchange argument holds: any optimal solution can be rewritten to include your choice without getting worse. Without that argument, greedy is just a guess that happens to pass some tests.",
+        "direction": "Sort by the quantity your exchange argument is about — usually the end point for interval scheduling — then sweep once, keeping only the running state you need.",
+        "pseudocode": "sort(items, key=end)\ncount = 0\ncurrent_end = -infinity\nfor item in items:\n    if item.start >= current_end:\n        count += 1\n        current_end = item.end\nreturn count",
+        "solution": "Sort by end point and sweep, taking any interval that starts at or after the last one you took. The exchange argument: the interval that ends earliest leaves the most room for everything after it, so it is always safe to take. O(n log n) for the sort, O(1) extra space for the sweep."
+      },
+      "questions": {
+        "clarify": ["Do touching endpoints count as an overlap?", "What exactly are you maximising?"],
+        "observe": ["On small examples, which item do you always take first?"],
+        "concept": ["Can you argue that your greedy choice never makes an optimal solution unreachable?"],
+        "direction": ["Should you sort by start, by end, or by length — and why does the answer differ?"]
+      },
+      "alternatives": [
+        {
+          "id": "dp-alt",
+          "name": "Dynamic programming",
+          "summary": "Consider taking or skipping each item and keep the best of the two.",
+          "time": "O(n^2)",
+          "space": "O(n)",
+          "pros": ["Correct even when no greedy rule exists", "Extends to weighted variants"],
+          "cons": ["Slower", "More state to get right"],
+          "whenToPrefer": "When items carry weights, so 'earliest end' is no longer safe.",
+          "keyInsight": "The moment you cannot prove the exchange argument, you need DP."
+        }
+      ],
+      "practice": ["Non-overlapping Intervals", "Merge Intervals", "Jump Game", "Gas Station", "Task Scheduler", "Partition Labels"]
+    },
+    {
+      "id": "matrix-traversal",
+      "name": "Matrix traversal and in-place transforms",
+      "topics": ["Matrix", "Array", "Simulation"],
+      "problemKeywords": ["matrix", "grid", "rotate", "spiral", "diagonal", "set zeroes", "transpose", "in-place"],
+      "codeSignals": ["matrix"],
+      "bruteForceTime": "O(m * n)",
+      "bruteForceSpace": "O(m * n)",
+      "optimalTime": "O(m * n)",
+      "optimalSpace": "O(1)",
+      "keyInsight": "Every cell has to be touched, so the time is already optimal — the real question is whether you need the extra copy. Composing simple in-place transforms (transpose, then reverse) often replaces it.",
+      "direction": "Keep the O(m*n) pass but remove the auxiliary matrix by transforming in place or reusing the first row/column as marker storage.",
+      "ladder": {
+        "clarify": "Must the transform happen in place? Is the matrix square, and what should happen to an empty one?",
+        "observe": "Look at where a single element ends up after the operation. Can you express that destination as the composition of two simpler moves you already know?",
+        "concept": "A rotation is a transpose followed by a row reversal. Marker-based tricks can store bookkeeping inside the matrix itself instead of in a side buffer.",
+        "direction": "Do the two-step in-place transform, or if you need flags, reserve the first row and column as your marker storage and handle those two lines separately at the end.",
+        "pseudocode": "for i in range(n):\n    for j in range(i + 1, n):\n        swap(m[i][j], m[j][i])   # transpose\nfor row in m:\n    reverse(row)                 # then mirror",
+        "solution": "Transpose across the main diagonal, then reverse each row — the composition is exactly a 90-degree clockwise rotation. Time stays O(m*n) because every cell must be touched, but the extra space drops to O(1). Guard the empty and single-cell cases first."
+      },
+      "questions": {
+        "clarify": ["Does it have to be in place?", "Is the matrix guaranteed square?"],
+        "observe": ["Where does element (i, j) end up after the operation?"],
+        "concept": ["Which two simpler operations compose into this one?"],
+        "direction": ["If you need per-row flags, where could you store them without a second matrix?"]
+      },
+      "alternatives": [
+        {
+          "id": "copy-matrix",
+          "name": "Build into a fresh matrix",
+          "summary": "Write results into a new matrix and return it.",
+          "time": "O(m * n)",
+          "space": "O(m * n)",
+          "pros": ["Index arithmetic is much easier to get right", "The source stays intact"],
+          "cons": ["Doubles the memory", "Not allowed when the problem says in-place"],
+          "whenToPrefer": "When the original must be preserved or memory is plentiful.",
+          "keyInsight": "The extra matrix buys you simplicity, not speed."
+        }
+      ],
+      "practice": ["Rotate Image", "Spiral Matrix", "Set Matrix Zeroes", "Game of Life", "Search a 2D Matrix"]
+    }
+  ],
+  "fallback": {
+    "id": "general",
+    "name": "General problem solving",
+    "topics": ["Problem Solving"],
+    "problemKeywords": [],
+    "codeSignals": [],
+    "bruteForceTime": "O(n^2)",
+    "bruteForceSpace": "O(n)",
+    "optimalTime": "O(n)",
+    "optimalSpace": "O(1)",
+    "keyInsight": "Most speedups come from noticing repeated work. Find the question your inner loop keeps re-asking, and find a structure that answers it instantly.",
+    "direction": "Identify the repeated computation, then choose a structure — hash map, sorted order, running aggregate, or a table of solved subproblems — that removes the repetition.",
+    "ladder": {
+      "clarify": "Restate the problem in one sentence, then write down the inputs, the output and the constraints. The constraint magnitudes usually tell you the complexity you are being asked for.",
+      "observe": "Work a small example by hand and watch for work you do more than once. Repetition is where the algorithm is hiding.",
+      "concept": "Ask what invariant holds as you scan. Something that stays true — sorted order, a running total, a set of things already seen — is what lets you skip work.",
+      "direction": "Match the repeated question to a structure: membership goes to a hash set, ordering to sorting or a heap, range aggregates to prefix sums, overlapping subproblems to memoisation.",
+      "pseudocode": "state = initial()\nfor element in input:\n    state = update(state, element)   # O(1) amortised\n    answer = combine(answer, query(state))\nreturn answer",
+      "solution": "Replace the repeated inner computation with a maintained structure so each element is processed a constant number of times, then read the answer off the accumulated state."
+    },
+    "questions": {
+      "clarify": ["What are the exact inputs and outputs?", "What do the constraint sizes suggest about the target complexity?"],
+      "observe": ["What work are you repeating between iterations?"],
+      "concept": ["What stays true as you scan from left to right?"],
+      "direction": ["Which structure answers your repeated question in O(1) or O(log n)?"]
+    },
+    "alternatives": [],
+    "practice": ["Two Sum", "Best Time to Buy and Sell Stock", "Valid Parentheses", "Merge Intervals"]
+  }
+}

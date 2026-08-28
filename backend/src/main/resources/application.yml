@@ -1,0 +1,163 @@
+spring:
+  application:
+    name: revexa-backend
+  profiles:
+    default: local
+
+  datasource:
+    # H2 runs in PostgreSQL compatibility mode so the very same Flyway migrations that ship to
+    # production also build the local schema — no second dialect to keep in sync.
+    url: jdbc:h2:mem:revexa;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1
+    username: sa
+    password: ""
+    driver-class-name: org.h2.Driver
+    hikari:
+      maximum-pool-size: 10
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+        format_sql: false
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: 2s
+
+  servlet:
+    multipart:
+      max-request-size: 2MB
+
+server:
+  port: ${SERVER_PORT:8080}
+  error:
+    include-message: never
+    include-stacktrace: never
+  compression:
+    enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+  health:
+    redis:
+      enabled: false
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+
+logging:
+  level:
+    root: INFO
+    ai.revexa: INFO
+    org.hibernate.SQL: WARN
+
+revexa:
+  seed-demo-data: true
+  cors-allowed-origins:
+    - http://localhost:3000
+    - http://127.0.0.1:3000
+
+  security:
+    jwt-secret: ${REVEXA_JWT_SECRET:revexa-local-development-secret-change-me-please-0123456789}
+    access-token-ttl: 2h
+    refresh-token-ttl: 30d
+    issuer: revexa.ai
+
+  cache:
+    mode: memory
+    ttl: 6h
+
+  ai:
+    # 'heuristic' is the offline engine: deterministic, free, and always available. Set a key and
+    # switch the provider to route the same pipeline through a hosted model instead.
+    provider: ${REVEXA_AI_PROVIDER:heuristic}
+    fallback-to-heuristic: true
+    timeout: 60s
+    max-output-tokens: 4096
+    temperature: 0.2
+    anthropic:
+      api-key: ${ANTHROPIC_API_KEY:}
+      base-url: https://api.anthropic.com
+      model: ${ANTHROPIC_MODEL:claude-sonnet-4-5}
+    openai:
+      api-key: ${OPENAI_API_KEY:}
+      base-url: ${OPENAI_BASE_URL:https://api.openai.com}
+      model: ${OPENAI_MODEL:gpt-4o-mini}
+
+  rate-limit:
+    enabled: true
+    default-requests: 240
+    ai-requests: 30
+    auth-requests: 20
+    window: 1m
+
+  sandbox:
+    provider: ${REVEXA_SANDBOX_PROVIDER:simulated}
+    timeout: 10s
+
+---
+spring:
+  config:
+    activate:
+      on-profile: docker
+
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:postgres}:${POSTGRES_PORT:5432}/${POSTGRES_DB:revexa}
+    username: ${POSTGRES_USER:revexa}
+    password: ${POSTGRES_PASSWORD:revexa}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+
+  data:
+    redis:
+      host: ${REDIS_HOST:redis}
+      port: ${REDIS_PORT:6379}
+
+management:
+  health:
+    redis:
+      enabled: true
+
+revexa:
+  cache:
+    mode: redis
+  cors-allowed-origins: ${REVEXA_CORS_ORIGINS:http://localhost:3000}
+
+---
+spring:
+  config:
+    activate:
+      on-profile: test
+
+  flyway:
+    enabled: false
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+
+revexa:
+  seed-demo-data: false
+  rate-limit:
+    enabled: false
