@@ -166,7 +166,32 @@ expensive and capped per user, and everything else is cheap.
 
 ---
 
-## 10. Deliberate omissions
+## 10. The API proxy is a route handler, not a rewrite
+
+**Decision.** The browser talks to `/backend/*` on the Next server, which forwards to the API. That
+forwarding lives in a route handler (`app/backend/[...path]/route.ts`), not in a `next.config`
+rewrite.
+
+**Why.** Rewrites are evaluated during `next build` and frozen into the routes manifest. A container
+image built with one API host could not be pointed at another without rebuilding — which defeats the
+purpose of `BACKEND_INTERNAL_URL` being an environment variable. Resolving the target per request
+makes it a genuine runtime setting, which is exactly what the Compose stack needs when the API is
+reachable as `http://api:8080` rather than `localhost`.
+
+Serving the API from the app's own origin has two more benefits: the browser never encounters CORS,
+and the API host is never exposed to the client.
+
+**Cost.** Requests pass through Node rather than being handled at the routing layer. For JSON
+payloads at this scale that is not measurable, and the handler streams the upstream body rather than
+buffering it.
+
+**Found by building the image.** This was a rewrite until the container was actually run: the image
+was healthy, served pages, and quietly ignored `BACKEND_INTERNAL_URL` because the old value was
+baked in at build time.
+
+---
+
+## 11. Deliberate omissions
 
 | Omitted | Why | Where it plugs in |
 | --- | --- | --- |
