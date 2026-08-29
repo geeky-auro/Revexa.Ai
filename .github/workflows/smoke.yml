@@ -1,0 +1,37 @@
+name: End-to-end smoke
+
+# Boots the real stack and walks the core loop over HTTP: register, import a problem, review a
+# quadratic solution, climb the hint ladder, and confirm the solution rung stays gated.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * 1'
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: temurin
+          cache: maven
+
+      - name: Start the API
+        working-directory: backend
+        run: |
+          mvn -B -q package -DskipTests
+          nohup java -jar target/*.jar > api.log 2>&1 &
+          for i in $(seq 1 60); do
+            curl -sf http://localhost:8080/actuator/health && break
+            sleep 2
+          done
+
+      - name: Walk the core loop
+        run: ./scripts/smoke-test.sh
+
+      - name: API log on failure
+        if: failure()
+        run: tail -100 backend/api.log

@@ -120,7 +120,14 @@ public class StaticCodeAnalyzer {
                         || lower.contains("functools.cache")
                         || (recursive && structures.contains("dp"));
 
+        // A visited set only rescues the cost when the recursion actually branches — that is the
+        // shape of a traversal. One self-call plus a variable named `seen` is not a graph.
+        boolean guardedByVisitedSet = selfCalls >= 2 && marksVisitedNodes(lower);
+
         Set<String> signals = new LinkedHashSet<>();
+        if (guardedByVisitedSet) {
+            signals.add("visitedGuard");
+        }
         if (recursive) {
             signals.add("recursion");
         }
@@ -142,6 +149,7 @@ public class StaticCodeAnalyzer {
                 recursive,
                 selfCalls,
                 memoized,
+                guardedByVisitedSet,
                 structures.contains("sorting"),
                 structures.contains("binarySearch"),
                 loops.maxDepth() >= 2 && nestedScanOverSameCollection(cleaned),
@@ -402,42 +410,59 @@ public class StaticCodeAnalyzer {
                 .contains(name.toLowerCase(Locale.ROOT));
     }
 
+    /**
+     * Counts calls a function makes to itself.
+     *
+     * <p>The subtlety is locating the declaration rather than the first mention: in Java and C++ a
+     * helper is routinely called above the line that defines it, and treating that first mention as
+     * the declaration makes every helper look recursive.
+     */
     private int countSelfCalls(String code, List<String> functions) {
         int total = 0;
         for (String name : functions) {
-            Matcher declaration =
-                    Pattern.compile("\\b(?:def|function|func|fn|fun)?\\s*" + Pattern.quote(name) + "\\s*\\(")
-                            .matcher(code);
-            int occurrences = 0;
-            while (declaration.find()) {
-                occurrences++;
+            int declarationIndex = declarationIndex(code, name);
+            if (declarationIndex < 0) {
+                continue;
             }
-            // The declaration itself is one occurrence; anything beyond it is a call.
-            int calls = Math.max(0, occurrences - 1);
-            // A method called only from a wrapper is not recursion; require the call inside its own body.
-            if (calls > 0 && isCalledWithinOwnBody(code, name)) {
-                total += calls;
+            String body = code.substring(declarationIndex + name.length());
+            Matcher call = Pattern.compile("\\b" + Pattern.quote(name) + "\\s*\\(").matcher(body);
+            int calls = 0;
+            while (call.find()) {
+                calls++;
             }
+            total += calls;
         }
         return total;
     }
 
-    private boolean isCalledWithinOwnBody(String code, String name) {
-        int declarationIndex = firstDeclarationIndex(code, name);
-        if (declarationIndex < 0) {
-            return false;
+    /** Where the function is <em>defined</em>: a {@code def}/{@code function} keyword, or a signature with a body. */
+    private int declarationIndex(String code, String name) {
+        Matcher keyword =
+                Pattern.compile("\\b(?:def|function|func|fn|fun)\\s+" + Pattern.quote(name) + "\\s*\\(").matcher(code);
+        if (keyword.find()) {
+            return keyword.start();
         }
-        String after = code.substring(declarationIndex + name.length());
-        Matcher call = Pattern.compile("\\b" + Pattern.quote(name) + "\\s*\\(").matcher(after);
-        return call.find();
-    }
-
-    private int firstDeclarationIndex(String code, String name) {
-        Matcher m = Pattern.compile("\\b" + Pattern.quote(name) + "\\s*\\(").matcher(code);
-        return m.find() ? m.start() : -1;
+        // Brace languages: a signature immediately followed by an opening body brace. A call site such
+        // as `if (allUnique(s, i, j)) {` cannot match, because a `)` sits between the arguments and the brace.
+        Matcher signature =
+                Pattern.compile("\\b" + Pattern.quote(name) + "\\s*\\([^;{)]*\\)\\s*(?:const\\s*)?\\{").matcher(code);
+        return signature.find() ? signature.start() : -1;
     }
 
     // ---------------------------------------------------------------- probes
+
+    /**
+     * A traversal that records where it has been cannot revisit a node, so its recursion is bounded
+     * by the size of the graph rather than by branching factor — the difference between O(V + E) and
+     * O(2^n). In-place marking (overwriting a grid cell) counts just as much as an explicit set.
+     */
+    private boolean marksVisitedNodes(String lower) {
+        return lower.contains("visited")
+                || lower.contains("seen")
+                || lower.contains("= \"\"")  && lower.contains("grid[")
+                || lower.contains("grid[") && (lower.contains("= 0") || lower.contains("='0'") || lower.contains("= '0'"))
+                || lower.contains("board[") && lower.contains("#");
+    }
 
     private boolean movesTwoPointers(String lower) {
         boolean incrementsLeft = lower.contains("left++") || lower.contains("left += 1") || lower.contains("left+=1") || lower.contains("lo++") || lower.contains("slow =");

@@ -1,0 +1,24 @@
+{
+  "name": "revexa",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Revexa.Ai — an AI mentor for competitive programming practice",
+  "workspaces": [
+    "frontend",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace frontend",
+    "build": "npm run build --workspace frontend",
+    "lint": "npm run lint --workspace frontend",
+    "typecheck": "npm run typecheck --workspace frontend",
+    "test": "npm run test --workspace packages/core",
+    "backend:dev": "cd backend && mvn spring-boot:run",
+    "backend:test": "cd backend && mvn test",
+    "stack:up": "docker compose up --build",
+    "stack:down": "docker compose down -v"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

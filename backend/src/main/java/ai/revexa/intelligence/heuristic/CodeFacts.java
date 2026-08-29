@@ -16,6 +16,8 @@ public record CodeFacts(
         boolean recursive,
         int selfCallSites,
         boolean memoized,
+        /** True when recursion is bounded by a visited set or in-place marking, as in a graph traversal. */
+        boolean guardedByVisitedSet,
         boolean sorts,
         boolean binarySearch,
         boolean nestedScanOverSameCollection,

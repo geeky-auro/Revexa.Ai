@@ -4,9 +4,7 @@
 
 insert into problem (id, title, slug, source, external_id, url, difficulty, statement, constraints_text, examples, owner_id, curated, created_at, updated_at)
 values ('69cb5b5b-2432-5f39-b049-dd6d59959f3a', 'Two Sum', 'two-sum', 'MANUAL', null, null, 'EASY',
-        'Two Sum
-
-You are given an array of integers nums and an integer target. Return the indices of the two numbers that add up to target.
+        'You are given an array of integers nums and an integer target. Return the indices of the two numbers that add up to target.
 
 Each input has exactly one valid answer, and you may not use the same element twice. The answer may be returned in any order.
 
@@ -42,9 +40,7 @@ insert into problem_topic (problem_id, topic) values ('69cb5b5b-2432-5f39-b049-d
 
 insert into problem (id, title, slug, source, external_id, url, difficulty, statement, constraints_text, examples, owner_id, curated, created_at, updated_at)
 values ('c5f6a0ef-f8b7-5e73-9408-9254dfffb923', 'Longest Substring Without Repeating Characters', 'longest-substring-without-repeating-characters', 'MANUAL', null, null, 'MEDIUM',
-        'Longest Substring Without Repeating Characters
-
-Given a string s, find the length of the longest contiguous substring that contains no repeated characters.
+        'Given a string s, find the length of the longest contiguous substring that contains no repeated characters.
 
 Note that a substring is contiguous; a subsequence is not. The answer must be a substring.
 
@@ -77,9 +73,7 @@ insert into problem_topic (problem_id, topic) values ('c5f6a0ef-f8b7-5e73-9408-9
 
 insert into problem (id, title, slug, source, external_id, url, difficulty, statement, constraints_text, examples, owner_id, curated, created_at, updated_at)
 values ('2438dda8-6a8a-5b54-af78-d4b998a7a6a7', 'Container With Most Water', 'container-with-most-water', 'MANUAL', null, null, 'MEDIUM',
-        'Container With Most Water
-
-You are given an integer array height of length n, where height[i] is the height of a vertical line drawn at position i.
+        'You are given an integer array height of length n, where height[i] is the height of a vertical line drawn at position i.
 
 Pick two lines so that, together with the x-axis, they form a container holding the most water. Return the maximum amount of water the container can store. You may not slant the container.
 
@@ -108,9 +102,7 @@ insert into problem_topic (problem_id, topic) values ('2438dda8-6a8a-5b54-af78-d
 
 insert into problem (id, title, slug, source, external_id, url, difficulty, statement, constraints_text, examples, owner_id, curated, created_at, updated_at)
 values ('3b3eb962-1d14-5ad7-a209-a0409b8fd7fe', 'Koko Eating Bananas', 'koko-eating-bananas', 'MANUAL', null, null, 'MEDIUM',
-        'Koko Eating Bananas
-
-There are n piles of bananas, where piles[i] is the number of bananas in the i-th pile. A guard returns in h hours.
+        'There are n piles of bananas, where piles[i] is the number of bananas in the i-th pile. A guard returns in h hours.
 
 Koko picks an eating speed of k bananas per hour. Each hour she chooses one pile and eats k bananas from it; if the pile has fewer than k bananas left she eats all of them and does not move on to another pile that hour.
 
@@ -143,9 +135,7 @@ insert into problem_topic (problem_id, topic) values ('3b3eb962-1d14-5ad7-a209-a
 
 insert into problem (id, title, slug, source, external_id, url, difficulty, statement, constraints_text, examples, owner_id, curated, created_at, updated_at)
 values ('b41937f2-fd2d-5d16-a104-1f70d23e39bc', 'Subarray Sum Equals K', 'subarray-sum-equals-k', 'MANUAL', null, null, 'MEDIUM',
-        'Subarray Sum Equals K
-
-Given an array of integers nums and an integer k, return the total number of contiguous subarrays whose sum equals k.
+        'Given an array of integers nums and an integer k, return the total number of contiguous subarrays whose sum equals k.
 
 The array may contain negative numbers, so a subarray sum does not grow monotonically as the subarray gets longer.
 
@@ -178,9 +168,7 @@ insert into problem_topic (problem_id, topic) values ('b41937f2-fd2d-5d16-a104-1
 
 insert into problem (id, title, slug, source, external_id, url, difficulty, statement, constraints_text, examples, owner_id, curated, created_at, updated_at)
 values ('a0633e71-6f4a-5830-a648-469947476334', 'Coin Change', 'coin-change', 'MANUAL', null, null, 'MEDIUM',
-        'Coin Change
-
-You are given an integer array coins representing coin denominations, and an integer amount.
+        'You are given an integer array coins representing coin denominations, and an integer amount.
 
 Return the fewest number of coins needed to make up that amount. If the amount cannot be made up by any combination of the coins, return -1. You have an infinite supply of each denomination.
 
@@ -212,9 +200,7 @@ insert into problem_topic (problem_id, topic) values ('a0633e71-6f4a-5830-a648-4
 
 insert into problem (id, title, slug, source, external_id, url, difficulty, statement, constraints_text, examples, owner_id, curated, created_at, updated_at)
 values ('a8145bde-3d8e-5985-a5e7-2db67288f179', 'Number of Islands', 'number-of-islands', 'MANUAL', null, null, 'MEDIUM',
-        'Number of Islands
-
-You are given an m x n grid where each cell is either "1" (land) or "0" (water). An island is a group of land cells connected horizontally or vertically; diagonals do not connect. Assume the grid is surrounded by water on all four sides.
+        'You are given an m x n grid where each cell is either "1" (land) or "0" (water). An island is a group of land cells connected horizontally or vertically; diagonals do not connect. Assume the grid is surrounded by water on all four sides.
 
 Return the number of islands.
 
@@ -245,9 +231,7 @@ insert into problem_topic (problem_id, topic) values ('a8145bde-3d8e-5985-a5e7-2
 
 insert into problem (id, title, slug, source, external_id, url, difficulty, statement, constraints_text, examples, owner_id, curated, created_at, updated_at)
 values ('b3bd4820-2459-5fe8-bfb8-cc4ac031241a', 'Daily Temperatures', 'daily-temperatures', 'MANUAL', null, null, 'MEDIUM',
-        'Daily Temperatures
-
-Given an array temperatures where temperatures[i] is the temperature on day i, return an array answer such that answer[i] is the number of days you have to wait after day i to get a warmer temperature.
+        'Given an array temperatures where temperatures[i] is the temperature on day i, return an array answer such that answer[i] is the number of days you have to wait after day i to get a warmer temperature.
 
 If no future day is warmer, set answer[i] to 0.
 
@@ -273,9 +257,7 @@ insert into problem_topic (problem_id, topic) values ('b3bd4820-2459-5fe8-bfb8-c
 
 insert into problem (id, title, slug, source, external_id, url, difficulty, statement, constraints_text, examples, owner_id, curated, created_at, updated_at)
 values ('3c9b396c-64f6-5e98-8412-4575bad3e277', 'Kth Largest Element in an Array', 'kth-largest-element-in-an-array', 'MANUAL', null, null, 'MEDIUM',
-        'Kth Largest Element in an Array
-
-Given an integer array nums and an integer k, return the k-th largest element in the array.
+        'Given an integer array nums and an integer k, return the k-th largest element in the array.
 
 Note that this is the k-th largest in sorted order, not the k-th distinct element.
 
@@ -303,9 +285,7 @@ insert into problem_topic (problem_id, topic) values ('3c9b396c-64f6-5e98-8412-4
 
 insert into problem (id, title, slug, source, external_id, url, difficulty, statement, constraints_text, examples, owner_id, curated, created_at, updated_at)
 values ('26b5a1a1-0f3c-5305-ba8a-772ef367e5a9', 'Valid Anagram', 'valid-anagram', 'MANUAL', null, null, 'EASY',
-        'Valid Anagram
-
-Given two strings s and t, return true if t is an anagram of s, and false otherwise.
+        'Given two strings s and t, return true if t is an anagram of s, and false otherwise.
 
 An anagram uses exactly the same characters with exactly the same frequencies, in any order.
 

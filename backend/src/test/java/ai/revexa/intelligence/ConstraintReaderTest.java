@@ -50,4 +50,19 @@ class ConstraintReaderTest {
         assertThat(constraints.budget()).isEmpty();
         assertThat(constraints.note()).contains("No explicit bound");
     }
+
+    @Test
+    @DisplayName("keeps the minus sign on a negative lower bound")
+    void doesNotStripNegativeSigns() {
+        ConstraintReader.Constraints constraints =
+                reader.read(
+                        """
+                        Constraints:
+                        2 <= nums.length <= 10^4
+                        -10^9 <= nums[i] <= 10^9
+                        """,
+                        null);
+
+        assertThat(constraints.lines()).contains("-10^9 <= nums[i] <= 10^9");
+    }
 }

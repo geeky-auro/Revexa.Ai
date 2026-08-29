@@ -58,7 +58,8 @@ public class ConstraintReader {
             boolean looksLikeConstraint =
                     line.contains("<=") || line.contains("≤") || line.contains(">=") || line.contains("≥");
             if ((inConstraintBlock || looksLikeConstraint) && CONSTRAINT_LINE.matcher(line).matches()) {
-                lines.add(line.replaceFirst("^[-*•]\\s*", ""));
+                // Require whitespace after the bullet, or "-10^9 <= x" loses its minus sign.
+                lines.add(line.replaceFirst("^[-*•]\\s+", ""));
             }
             if (lines.size() >= 8) {
                 break;

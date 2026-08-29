@@ -64,13 +64,28 @@ public class ProblemTextParser {
     public Parsed parse(String rawText, String explicitTitle, String explicitDifficulty) {
         String text = rawText == null ? "" : rawText.replace("\r\n", "\n").strip();
         String title = explicitTitle != null && !explicitTitle.isBlank() ? explicitTitle.strip() : inferTitle(text);
-        String constraints = extractConstraints(text);
-        String examples = mapper.valueToTree(extractExamples(text)).toString();
+        String body = withoutLeadingTitle(text, title);
+        String constraints = extractConstraints(body);
+        String examples = mapper.valueToTree(extractExamples(body)).toString();
         Difficulty difficulty =
                 explicitDifficulty != null && !explicitDifficulty.isBlank()
                         ? parseDifficulty(explicitDifficulty)
                         : inferDifficulty(text);
-        return new Parsed(title, text, constraints, examples, difficulty, inferTopics(text));
+        return new Parsed(title, body, constraints, examples, difficulty, inferTopics(body));
+    }
+
+    /**
+     * Removes the heading line when it merely repeats the title, so the stored statement does not
+     * carry it twice — the UI renders the title separately, and the AI restatement would otherwise
+     * fold it into the first sentence.
+     */
+    private String withoutLeadingTitle(String text, String title) {
+        String[] lines = text.split("\n", 2);
+        if (lines.length < 2) {
+            return text;
+        }
+        String head = lines[0].strip().replaceFirst("^#+\\s*", "").replaceFirst("^\\d+\\.\\s*", "");
+        return head.equalsIgnoreCase(title.strip()) ? lines[1].stripLeading() : text;
     }
 
     public String slugify(String title) {

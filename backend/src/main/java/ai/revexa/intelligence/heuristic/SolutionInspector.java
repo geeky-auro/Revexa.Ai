@@ -310,7 +310,7 @@ public class SolutionInspector {
                             null));
         }
 
-        if (facts.selfCallSites() >= 2 && !facts.memoized()) {
+        if (facts.selfCallSites() >= 2 && !facts.memoized() && !facts.guardedByVisitedSet()) {
             findings.add(
                     new Finding(
                             Finding.TYPE_PERFORMANCE,
@@ -485,7 +485,16 @@ public class SolutionInspector {
         }
 
         if (facts.recursive()) {
-            if (facts.selfCallSites() >= 2 && !facts.memoized()) {
+            if (facts.guardedByVisitedSet()) {
+                // Each vertex is entered once, so the traversal is linear in the graph, not
+                // exponential in the branching factor — the visited set is what makes that true.
+                time = Complexity.LINEAR;
+                contributors.add(
+                        new ComplexityAnalysis.Contributor(
+                                "Traversal with a visited set",
+                                Complexity.LINEAR,
+                                "Every vertex is entered at most once and every edge examined at most twice, giving O(V + E)."));
+            } else if (facts.selfCallSites() >= 2 && !facts.memoized()) {
                 time = Complexity.EXPONENTIAL;
                 contributors.add(
                         new ComplexityAnalysis.Contributor(
@@ -563,7 +572,10 @@ public class SolutionInspector {
     private String timeExplanation(CodeFacts facts, String time, ConstraintReader.Constraints constraints) {
         StringBuilder sb = new StringBuilder();
         sb.append("Estimated ").append(time).append(" — ").append(Complexity.describe(time)).append(". ");
-        if (facts.maxLoopDepth() >= 2) {
+        if (facts.guardedByVisitedSet()) {
+            sb.append("The nested scan starts a traversal from each cell, but the visited set means every cell is ")
+                    .append("entered exactly once overall, so the total work is linear in the size of the grid. ");
+        } else if (facts.maxLoopDepth() >= 2) {
             sb.append("The dominant cost is ")
                     .append(facts.maxLoopDepth())
                     .append(" levels of loop nesting; everything outside them is noise by comparison. ");

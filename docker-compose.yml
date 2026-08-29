@@ -1,0 +1,86 @@
+# Local development stack: Postgres, Redis, the Spring Boot API and the Next.js web app.
+#
+#   docker compose up --build
+#   → web  http://localhost:3000   (sign in as demo@revexa.ai / revexa-demo)
+#   → api  http://localhost:8080/swagger-ui.html
+#
+# No AI credentials are required: the backend defaults to the offline heuristic provider. Set
+# ANTHROPIC_API_KEY (or OPENAI_API_KEY) and REVEXA_AI_PROVIDER to route the pipeline through a
+# hosted model instead.
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-revexa}
+      POSTGRES_USER: ${POSTGRES_USER:-revexa}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-revexa}
+    ports:
+      - '${POSTGRES_PORT:-5432}:5432'
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-revexa} -d ${POSTGRES_DB:-revexa}']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    command: ['redis-server', '--appendonly', 'yes']
+    ports:
+      - '${REDIS_PORT:-6379}:6379'
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build:
+      context: ./backend
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-revexa}
+      POSTGRES_USER: ${POSTGRES_USER:-revexa}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-revexa}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REVEXA_JWT_SECRET: ${REVEXA_JWT_SECRET:-revexa-local-development-secret-change-me-please-0123456789}
+      REVEXA_CORS_ORIGINS: ${REVEXA_CORS_ORIGINS:-http://localhost:3000}
+      REVEXA_AI_PROVIDER: ${REVEXA_AI_PROVIDER:-heuristic}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-sonnet-4-5}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
+    ports:
+      - '${API_PORT:-8080}:8080'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  web:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      args:
+        NEXT_PUBLIC_API_BASE_URL: /backend
+    environment:
+      # The browser talks to /backend on the Next server, which proxies to the API over the
+      # compose network — so the API never has to be published to the host for the app to work.
+      BACKEND_INTERNAL_URL: http://api:8080
+      NEXT_PUBLIC_API_BASE_URL: /backend
+    ports:
+      - '${WEB_PORT:-3000}:3000'
+    depends_on:
+      - api
+
+volumes:
+  postgres-data:
+  redis-data:

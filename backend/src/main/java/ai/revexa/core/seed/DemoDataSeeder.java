@@ -319,7 +319,7 @@ public class DemoDataSeeder implements ApplicationRunner {
                 new Attempt(
                         "container-with-most-water",
                         "python",
-                        4,
+                        1,
                         """
                         class Solution:
                             def maxArea(self, height):
@@ -338,7 +338,7 @@ public class DemoDataSeeder implements ApplicationRunner {
                 new Attempt(
                         "number-of-islands",
                         "python",
-                        2,
+                        0,
                         """
                         class Solution:
                             def numIslands(self, grid):

@@ -155,4 +155,55 @@ class ReviewPipelineTest {
         SolutionComparison revealed = pipeline.compare(context().code(BRUTE_FORCE).allowSpoilers(true).build());
         assertThat(revealed.alternatives()).anyMatch(a -> a.optimal() && a.pseudocode() != null);
     }
+
+    @Test
+    @DisplayName("grid DFS with a visited set is costed as linear, not exponential")
+    void doesNotMisreadGraphTraversalAsExponential() {
+        String islands =
+                """
+                class Solution:
+                    def numIslands(self, grid):
+                        if not grid:
+                            return 0
+                        rows, cols = len(grid), len(grid[0])
+                        visited = set()
+
+                        def dfs(r, c):
+                            if r < 0 or c < 0 or r >= rows or c >= cols:
+                                return
+                            if (r, c) in visited or grid[r][c] != '1':
+                                return
+                            visited.add((r, c))
+                            dfs(r + 1, c)
+                            dfs(r - 1, c)
+                            dfs(r, c + 1)
+                            dfs(r, c - 1)
+
+                        islands = 0
+                        for r in range(rows):
+                            for c in range(cols):
+                                if grid[r][c] == '1' and (r, c) not in visited:
+                                    islands += 1
+                                    dfs(r, c)
+                        return islands
+                """;
+
+        CodeReviewResult result =
+                pipeline.review(
+                        StageContext.builder()
+                                .problemTitle("Number of Islands")
+                                .problemStatement(
+                                        "You are given an m x n grid of '1' land and '0' water. An island is a group of "
+                                                + "land cells connected horizontally or vertically. Return the number of islands.\n\n"
+                                                + "Constraints:\n1 <= m, n <= 300")
+                                .language("python")
+                                .code(islands)
+                                .build());
+
+        assertThat(result.complexity().time()).isEqualTo(Complexity.LINEAR);
+        assertThat(result.complexity().timeOptimal()).isTrue();
+        assertThat(result.findings())
+                .noneMatch(finding -> finding.title().contains("Branching recursion"));
+        assertThat(result.score()).isGreaterThan(70);
+    }
 }

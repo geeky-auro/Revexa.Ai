@@ -156,4 +156,73 @@ class StaticCodeAnalyzerTest {
                 .isEqualTo("java");
         assertThat(analyzer.detectLanguage("const f = (x) => x + 1;\nconsole.log(f(1));")).isEqualTo("javascript");
     }
+
+    @Test
+    @DisplayName("a traversal with a visited set is not branching recursion")
+    void recognisesVisitedGuard() {
+        CodeFacts facts =
+                analyzer.analyze(
+                        """
+                        def num_islands(grid):
+                            visited = set()
+
+                            def dfs(r, c):
+                                if (r, c) in visited or grid[r][c] != '1':
+                                    return
+                                visited.add((r, c))
+                                dfs(r + 1, c)
+                                dfs(r - 1, c)
+                                dfs(r, c + 1)
+                                dfs(r, c - 1)
+
+                            islands = 0
+                            for r in range(len(grid)):
+                                for c in range(len(grid[0])):
+                                    if grid[r][c] == '1' and (r, c) not in visited:
+                                        islands += 1
+                                        dfs(r, c)
+                            return islands
+                        """,
+                        "python");
+
+        assertThat(facts.recursive()).isTrue();
+        assertThat(facts.selfCallSites()).isGreaterThanOrEqualTo(2);
+        assertThat(facts.guardedByVisitedSet()).isTrue();
+    }
+
+    @Test
+    @DisplayName("a helper called before it is declared is not mistaken for recursion")
+    void doesNotMistakeHelpersForRecursion() {
+        CodeFacts facts =
+                analyzer.analyze(
+                        """
+                        class Solution {
+                            public int lengthOfLongestSubstring(String s) {
+                                int best = 0;
+                                for (int i = 0; i < s.length(); i++) {
+                                    for (int j = i; j < s.length(); j++) {
+                                        if (allUnique(s, i, j)) {
+                                            best = Math.max(best, j - i + 1);
+                                        }
+                                    }
+                                }
+                                return best;
+                            }
+
+                            private boolean allUnique(String s, int start, int end) {
+                                boolean[] seen = new boolean[128];
+                                for (int k = start; k <= end; k++) {
+                                    if (seen[s.charAt(k)]) return false;
+                                    seen[s.charAt(k)] = true;
+                                }
+                                return true;
+                            }
+                        }
+                        """,
+                        "java");
+
+        assertThat(facts.recursive()).isFalse();
+        assertThat(facts.guardedByVisitedSet()).isFalse();
+        assertThat(facts.maxLoopDepth()).isEqualTo(2);
+    }
 }

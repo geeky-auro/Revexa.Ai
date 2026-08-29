@@ -1,0 +1,236 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Revexa's palette. Indigo carries the product (actions, focus, the mentor's own voice); the verdict
+ * ramp — emerald through amber to rose — is reserved for judgements about a solution, so colour
+ * always means the same thing wherever it appears.
+ */
+:root {
+  --radius: 0.75rem;
+
+  --background: oklch(0.99 0.003 260);
+  --foreground: oklch(0.21 0.02 265);
+
+  --card: oklch(1 0 0);
+  --card-foreground: var(--foreground);
+  --popover: oklch(1 0 0);
+  --popover-foreground: var(--foreground);
+
+  --primary: oklch(0.52 0.21 275);
+  --primary-foreground: oklch(0.99 0.005 275);
+
+  --secondary: oklch(0.96 0.008 265);
+  --secondary-foreground: oklch(0.3 0.03 265);
+
+  --muted: oklch(0.965 0.006 265);
+  --muted-foreground: oklch(0.53 0.02 265);
+
+  --accent: oklch(0.95 0.03 265);
+  --accent-foreground: oklch(0.3 0.06 275);
+
+  --destructive: oklch(0.58 0.21 20);
+  --destructive-foreground: oklch(0.99 0.005 20);
+
+  --border: oklch(0.91 0.008 265);
+  --input: oklch(0.91 0.008 265);
+  --ring: oklch(0.52 0.21 275);
+
+  /* Verdict ramp: optimal → risky. */
+  --optimal: oklch(0.62 0.16 155);
+  --solid: oklch(0.65 0.14 195);
+  --improvable: oklch(0.72 0.16 75);
+  --inefficient: oklch(0.66 0.19 45);
+  --risky: oklch(0.6 0.21 22);
+
+  --surface-raised: oklch(0.985 0.004 265);
+  --code-bg: oklch(0.975 0.006 265);
+
+  --chart-1: oklch(0.52 0.21 275);
+  --chart-2: oklch(0.65 0.14 195);
+  --chart-3: oklch(0.62 0.16 155);
+  --chart-4: oklch(0.72 0.16 75);
+  --chart-5: oklch(0.63 0.2 22);
+}
+
+.dark {
+  --background: oklch(0.165 0.014 265);
+  --foreground: oklch(0.95 0.008 265);
+
+  --card: oklch(0.205 0.016 265);
+  --card-foreground: var(--foreground);
+  --popover: oklch(0.215 0.017 265);
+  --popover-foreground: var(--foreground);
+
+  --primary: oklch(0.68 0.17 280);
+  --primary-foreground: oklch(0.16 0.02 275);
+
+  --secondary: oklch(0.26 0.018 265);
+  --secondary-foreground: oklch(0.93 0.01 265);
+
+  --muted: oklch(0.25 0.016 265);
+  --muted-foreground: oklch(0.68 0.015 265);
+
+  --accent: oklch(0.29 0.035 275);
+  --accent-foreground: oklch(0.93 0.02 275);
+
+  --destructive: oklch(0.63 0.2 22);
+  --destructive-foreground: oklch(0.98 0.005 20);
+
+  --border: oklch(0.29 0.016 265);
+  --input: oklch(0.31 0.018 265);
+  --ring: oklch(0.68 0.17 280);
+
+  --optimal: oklch(0.7 0.15 155);
+  --solid: oklch(0.72 0.13 195);
+  --improvable: oklch(0.78 0.15 75);
+  --inefficient: oklch(0.72 0.17 45);
+  --risky: oklch(0.68 0.19 22);
+
+  --surface-raised: oklch(0.225 0.017 265);
+  --code-bg: oklch(0.19 0.016 265);
+
+  --chart-1: oklch(0.68 0.17 280);
+  --chart-2: oklch(0.72 0.13 195);
+  --chart-3: oklch(0.7 0.15 155);
+  --chart-4: oklch(0.78 0.15 75);
+  --chart-5: oklch(0.7 0.18 22);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-optimal: var(--optimal);
+  --color-solid: var(--solid);
+  --color-improvable: var(--improvable);
+  --color-inefficient: var(--inefficient);
+  --color-risky: var(--risky);
+  --color-surface-raised: var(--surface-raised);
+  --color-code-bg: var(--code-bg);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: var(--font-mono-code), ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, monospace;
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background-color: color-mix(in oklch, var(--primary) 26%, transparent);
+  }
+
+  /* A slim scrollbar keeps the workspace panels from feeling like separate browser windows. */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: color-mix(in oklch, var(--muted-foreground) 28%, transparent);
+    border-radius: 999px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: color-mix(in oklch, var(--muted-foreground) 45%, transparent);
+    background-clip: content-box;
+  }
+}
+
+@layer components {
+  /* The soft indigo wash behind hero and empty states. */
+  .revexa-glow {
+    background-image:
+      radial-gradient(60rem 30rem at 12% -12%, color-mix(in oklch, var(--primary) 16%, transparent), transparent 65%),
+      radial-gradient(45rem 25rem at 92% 0%, color-mix(in oklch, var(--solid) 12%, transparent), transparent 60%);
+  }
+
+  .revexa-grid {
+    background-image:
+      linear-gradient(to right, color-mix(in oklch, var(--border) 60%, transparent) 1px, transparent 1px),
+      linear-gradient(to bottom, color-mix(in oklch, var(--border) 60%, transparent) 1px, transparent 1px);
+    background-size: 3rem 3rem;
+    mask-image: radial-gradient(ellipse 80% 55% at 50% 0%, black 40%, transparent 100%);
+  }
+
+  .prose-mentor {
+    line-height: 1.65;
+  }
+
+  .prose-mentor p + p {
+    margin-top: 0.75rem;
+  }
+
+  .prose-mentor code {
+    font-family: var(--font-mono);
+    font-size: 0.875em;
+    background: var(--code-bg);
+    padding: 0.1rem 0.3rem;
+    border-radius: var(--radius-sm);
+  }
+
+  .prose-mentor pre {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    background: var(--code-bg);
+    padding: 0.875rem 1rem;
+    border-radius: var(--radius-md);
+    overflow-x: auto;
+    border: 1px solid var(--border);
+  }
+
+  .prose-mentor strong {
+    font-weight: 600;
+    color: var(--foreground);
+  }
+}

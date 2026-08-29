@@ -631,7 +631,7 @@ public class HeuristicEngine {
     // -------------------------------------------------------------- helpers
 
     private String firstSentences(String text, int count) {
-        String flattened = text.replaceAll("\\s+", " ").strip();
+        String flattened = withoutHeading(text).replaceAll("\\s+", " ").strip();
         String[] sentences = flattened.split("(?<=[.!?])\\s+");
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < Math.min(count, sentences.length); i++) {
@@ -639,6 +639,17 @@ public class HeuristicEngine {
         }
         String result = sb.toString().strip();
         return result.length() > 400 ? result.substring(0, 400) + "…" : result;
+    }
+
+    /** Drops a leading heading line — a short line with no terminal punctuation — before summarising. */
+    private String withoutHeading(String text) {
+        String[] lines = text.split("\n", 2);
+        if (lines.length < 2) {
+            return text;
+        }
+        String head = lines[0].strip();
+        boolean looksLikeHeading = !head.isEmpty() && head.length() <= 90 && !head.matches(".*[.!?:]$");
+        return looksLikeHeading ? lines[1].stripLeading() : text;
     }
 
     private String lowerFirst(String text) {
