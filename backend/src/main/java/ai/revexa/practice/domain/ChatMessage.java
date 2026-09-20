@@ -31,4 +31,52 @@ public class ChatMessage extends BaseEntity {
 
     @Column(name = "revealed_solution", nullable = false)
     private boolean revealedSolution = false;
+
+    public UUID getThreadId() {
+        return threadId;
+    }
+
+    public void setThreadId(UUID threadId) {
+        this.threadId = threadId;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public String getFollowUps() {
+        return followUps;
+    }
+
+    public void setFollowUps(String followUps) {
+        this.followUps = followUps;
+    }
+
+    public int getSpoilerLevel() {
+        return spoilerLevel;
+    }
+
+    public void setSpoilerLevel(int spoilerLevel) {
+        this.spoilerLevel = spoilerLevel;
+    }
+
+    public boolean isRevealedSolution() {
+        return revealedSolution;
+    }
+
+    public void setRevealedSolution(boolean revealedSolution) {
+        this.revealedSolution = revealedSolution;
+    }
 }

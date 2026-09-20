@@ -29,4 +29,44 @@ public class ChatThread extends BaseEntity {
     /** Highest hint level reached in this conversation, so the UI can badge spoiler exposure. */
     @Column(name = "max_spoiler_level", nullable = false)
     private int maxSpoilerLevel = 1;
+
+    public UUID getUserId() {
+        return userId;
+    }
+
+    public void setUserId(UUID userId) {
+        this.userId = userId;
+    }
+
+    public UUID getProblemId() {
+        return problemId;
+    }
+
+    public void setProblemId(UUID problemId) {
+        this.problemId = problemId;
+    }
+
+    public UUID getSubmissionId() {
+        return submissionId;
+    }
+
+    public void setSubmissionId(UUID submissionId) {
+        this.submissionId = submissionId;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public int getMaxSpoilerLevel() {
+        return maxSpoilerLevel;
+    }
+
+    public void setMaxSpoilerLevel(int maxSpoilerLevel) {
+        this.maxSpoilerLevel = maxSpoilerLevel;
+    }
 }

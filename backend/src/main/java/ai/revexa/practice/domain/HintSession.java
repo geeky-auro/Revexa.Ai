@@ -34,4 +34,44 @@ public class HintSession extends BaseEntity {
 
     @Column(name = "solution_revealed", nullable = false)
     private boolean solutionRevealed = false;
+
+    public UUID getUserId() {
+        return userId;
+    }
+
+    public void setUserId(UUID userId) {
+        this.userId = userId;
+    }
+
+    public UUID getProblemId() {
+        return problemId;
+    }
+
+    public void setProblemId(UUID problemId) {
+        this.problemId = problemId;
+    }
+
+    public UUID getSubmissionId() {
+        return submissionId;
+    }
+
+    public void setSubmissionId(UUID submissionId) {
+        this.submissionId = submissionId;
+    }
+
+    public int getCurrentLevel() {
+        return currentLevel;
+    }
+
+    public void setCurrentLevel(int currentLevel) {
+        this.currentLevel = currentLevel;
+    }
+
+    public boolean isSolutionRevealed() {
+        return solutionRevealed;
+    }
+
+    public void setSolutionRevealed(boolean solutionRevealed) {
+        this.solutionRevealed = solutionRevealed;
+    }
 }
